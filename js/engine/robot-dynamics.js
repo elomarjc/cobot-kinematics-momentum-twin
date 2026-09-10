@@ -5,7 +5,7 @@
  */
 export class RobotDynamics {
     constructor() {
-        // Link masses (kg) for UR5e
+        // Link masses (kg) for 6-DOF industrial cobot
         this.masses = [3.7, 8.39, 2.27, 1.22, 1.22, 0.19];
         // Link lengths (m)
         this.lengths = [0.1625, 0.425, 0.3922, 0.1333, 0.0997, 0.0996];

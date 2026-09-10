@@ -9,8 +9,9 @@
 </head>
 <body>
     <header class="header">
+        <button id="guideBtn" class="btn-guide">📖 How to Use & Problem Solved</button>
         <div class="header-title">
-            <h1>UR5e Collaborative Robot Digital Twin</h1>
+            <h1>6-DOF Collaborative Robot Digital Twin</h1>
             <div class="header-subtitle">Damped Least-Squares (DLS) Inverse Kinematics & Generalized Momentum Sensorless Collision Observer</div>
         </div>
         <div id="badge-estop" class="status-badge badge-normal">
@@ -118,5 +119,91 @@
     </main>
 
     <script type="module" src="js/app.js"></script>
+
+    <!-- Interactive Guide & Problem Overview Modal -->
+    <div id="guideModal" class="guide-modal-overlay">
+        <div class="guide-modal-card">
+            <div class="guide-modal-header">
+                <h2>🤖 6-DOF Cobot Kinematics & Momentum Observer Twin</h2>
+                <button id="guideClose" class="guide-modal-close" aria-label="Close modal">&times;</button>
+            </div>
+            <div class="guide-modal-body">
+                <div class="guide-section">
+                    <h3>🎯 The Industrial Problem Solved</h3>
+                    <p>Collaborative robots work directly alongside human operators without safety fences. Under ISO/TS 15066 safety standards, the robot must immediately halt motion if human collision occurs. Adding external 6-axis force-torque load cells or tactile skins increases robot cost and cable failures. Furthermore, approaching kinematic singularities causes standard inverse kinematics to command infinite joint speeds, causing overspeed trips.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>💡 How This Digital Twin Solves It</h3>
+                    <p>Implements analytical Denavit-Hartenberg (D-H) kinematics, Yoshikawa manipulability tracking, Damped Least-Squares (DLS) singularity-robust inverse kinematics to bound joint velocities (&le; 2.5 rad/s), and a sensorless Generalized Momentum Disturbance Observer that estimates external contact wrenches directly from motor currents and joint positions in &lt;15 ms.</p>
+                </div>
+
+                <div class="guide-section">
+                    <h3>🕹️ Interactive Quickstart Tutorial (Try This Now!)</h3>
+                    <ul class="guide-step-list">
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">1</span>
+                        <div class="guide-step-content">
+                            <strong>Manipulate the 3D Cobot:</strong> Orbit around the 6-DOF articulated arm in 3D WebGL; move target Cartesian sliders (X, Y, Z) or click 'Nominal Pose' and 'Table Pick'.
+                        </div>
+                    </li>
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">2</span>
+                        <div class="guide-step-content">
+                            <strong>Test Kinematic Singularity Regularization:</strong> Click 'Singularity' to stretch the arm outward: watch Yoshikawa manipulability drop below 0.02 while DLS dynamically injects damping lambda^2 to keep joint speeds bounded and smooth.
+                        </div>
+                    </li>
+                    <li class="guide-step-item">
+                        <span class="guide-step-num">3</span>
+                        <div class="guide-step-content">
+                            <strong>Simulate Collision (ISO/TS 15066):</strong> Click 'Simulate Impact (22 Nm)': the Generalized Momentum residual spikes above the 12 Nm threshold, tripping a Category 0 Emergency Stop in &lt;15 ms; click 'Reset E-Stop' to resume.
+                        </div>
+                    </li>
+                    </ul>
+                </div>
+
+                <div class="guide-section">
+                    <h3>📊 Telemetry & Control Glossary</h3>
+                    <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem;">
+                        <li><strong>Damped Least-Squares (DLS):</strong> Singularity-robust inverse kinematics solver that regularizes (J J^T + &lambda;^2 I)^-1 to prevent joint overspeed trips near kinematic boundaries.</li><li><strong>Yoshikawa Manipulability:</strong> Scalar measure w(q) = sqrt(det(J*J^T)) indicating kinematic dexterity; approaches zero near mechanical singular configurations.</li><li><strong>Generalized Momentum Observer:</strong> Sensorless disturbance estimator p = M(q)*q_dot that isolates external collision wrenches from motor currents without requiring external wrist force sensors.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="guide-modal-footer">
+                <button id="guideStart" class="btn-guide-start">🚀 Start Interactive Simulator</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Toggle Script -->
+    <script>
+        (function() {
+            const guideBtn = document.getElementById('guideBtn');
+            const guideModal = document.getElementById('guideModal');
+            const guideClose = document.getElementById('guideClose');
+            const guideStart = document.getElementById('guideStart');
+
+            function openModal() { if (guideModal) guideModal.classList.add('active'); }
+            function closeModal() { if (guideModal) guideModal.classList.remove('active'); }
+
+            if (guideBtn) guideBtn.addEventListener('click', openModal);
+            if (guideClose) guideClose.addEventListener('click', closeModal);
+            if (guideStart) guideStart.addEventListener('click', closeModal);
+            if (window.location.search.indexOf('guide') !== -1) openModal();
+
+            if (guideModal) {
+                guideModal.addEventListener('click', function(e) {
+                    if (e.target === guideModal) closeModal();
+                });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && guideModal && guideModal.classList.contains('active')) {
+                    closeModal();
+                }
+            });
+        })();
+    </script>
+
 </body>
 </html>

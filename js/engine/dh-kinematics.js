@@ -1,11 +1,11 @@
 /**
- * 6-DOF Collaborative Robot Kinematics (UR5e Geometry)
+ * 6-DOF Collaborative Robot Kinematics (6-DOF Cobot Geometry (inspired by UR5e kinematics))
  * Computes Forward Kinematics, Analytical Geometric Jacobian J(q),
  * and Yoshikawa Manipulability Index w(q) = sqrt(det(J*J^T)).
  */
 export class DHKinematics {
     constructor() {
-        // Standard UR5e Denavit-Hartenberg parameters (meters, radians)
+        // Standard 6-DOF Denavit-Hartenberg parameters (meters, radians)
         // [d, a, alpha]
         this.dhParams = [
             { d: 0.1625, a: 0.0,     alpha: Math.PI / 2 },  // Joint 1 (Base)

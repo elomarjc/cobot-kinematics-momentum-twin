@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Robot Kinematics & Momentum Observer Digital Twin</title>
-    <link rel="stylesheet" href="css/style.css?v=3.0">
+    <link rel="stylesheet" href="css/style.css?v=4.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     <header class="header">
-        <button id="guideBtn" class="btn-guide">📖 How to Use & Problem Solved</button>
+        <button id="guideBtn" class="btn-guide">🎮 Guided Tour</button>
         <div class="header-title">
             <h1>6-DOF Collaborative Robot Digital Twin</h1>
             <div class="header-subtitle">Damped Least-Squares (DLS) Inverse Kinematics & Generalized Momentum Sensorless Collision Observer</div>
@@ -120,121 +120,655 @@
 
     <script type="module" src="js/app.js"></script>
 
-    <!-- Interactive Guide & Problem Overview Modal -->
-    <div id="guideModal" class="guide-modal-overlay">
-        <div class="guide-modal-card">
-            <div class="guide-modal-header">
-                <h2>🤖 6-DOF Cobot Kinematics & Momentum Observer Twin</h2>
-                <button id="guideClose" class="guide-modal-close" aria-label="Close modal">&times;</button>
-            </div>
-            <div class="guide-modal-body">
-                <div class="guide-section">
-                    <h3>🎯 The Industrial Problem Solved</h3>
-                    <p>Collaborative robots work directly alongside human operators without safety fences. Under ISO/TS 15066 safety standards, the robot must immediately halt motion if human collision occurs. Adding external 6-axis force-torque load cells or tactile skins increases robot cost and cable failures. Furthermore, approaching kinematic singularities causes standard inverse kinematics to command infinite joint speeds, causing overspeed trips.</p>
-                </div>
-
-                <div class="guide-section">
-                    <h3>💡 How This Digital Twin Solves It</h3>
-                    <p>Implements analytical Denavit-Hartenberg (D-H) kinematics, Yoshikawa manipulability tracking, Damped Least-Squares (DLS) singularity-robust inverse kinematics to bound joint velocities (&le; 2.5 rad/s), and a sensorless Generalized Momentum Disturbance Observer that estimates external contact wrenches directly from motor currents and joint positions in &lt;15 ms.</p>
-                </div>
-
-                <div class="guide-section">
-                    <h3>🕹️ Interactive Quickstart Tutorial (Try This Now!)</h3>
-                    <ul class="guide-step-list">
-                    <li class="guide-step-item">
-                        <span class="guide-step-num">1</span>
-                        <div class="guide-step-content">
-                            <strong>Manipulate the 3D Cobot:</strong> Orbit around the 6-DOF articulated arm in 3D WebGL; move target Cartesian sliders (X, Y, Z) or click 'Nominal Pose' and 'Table Pick'.
-                        </div>
-                    </li>
-                    <li class="guide-step-item">
-                        <span class="guide-step-num">2</span>
-                        <div class="guide-step-content">
-                            <strong>Test Kinematic Singularity Regularization:</strong> Click 'Singularity' to stretch the arm outward: watch Yoshikawa manipulability drop below 0.02 while DLS dynamically injects damping lambda^2 to keep joint speeds bounded and smooth.
-                        </div>
-                    </li>
-                    <li class="guide-step-item">
-                        <span class="guide-step-num">3</span>
-                        <div class="guide-step-content">
-                            <strong>Simulate Collision (ISO/TS 15066):</strong> Click 'Simulate Impact (22 Nm)': the Generalized Momentum residual spikes above the 12 Nm threshold, tripping a Category 0 Emergency Stop in &lt;15 ms; click 'Reset E-Stop' to resume.
-                        </div>
-                    </li>
-                    </ul>
-                </div>
-
-                <div class="guide-section">
-                    <h3>📊 Telemetry & Control Glossary</h3>
-                    <ul style="padding-left: 20px; display: flex; flex-direction: column; gap: 6px; font-size: 0.85rem;">
-                        <li><strong>Damped Least-Squares (DLS):</strong> Singularity-robust inverse kinematics solver that regularizes (J J^T + &lambda;^2 I)^-1 to prevent joint overspeed trips near kinematic boundaries.</li><li><strong>Yoshikawa Manipulability:</strong> Scalar measure w(q) = sqrt(det(J*J^T)) indicating kinematic dexterity; approaches zero near mechanical singular configurations.</li><li><strong>Generalized Momentum Observer:</strong> Sensorless disturbance estimator p = M(q)*q_dot that isolates external collision wrenches from motor currents without requiring external wrist force sensors.</li>
-                    </ul>
-                </div>
-            </div>
-            <div class="guide-modal-footer">
+    <div class="guide-modal-footer">
                 <button id="guideStart" class="btn-guide-start">🚀 Start Interactive Simulator</button>
             </div>
         </div>
     </div>
 
-    <!-- Floating Quick Guide Pill (Always visible & 1-tap accessible on mobile & desktop) -->
-    <button id="guideBtnFloating" class="btn-guide-floating" aria-label="Open Guide">💡 Tutorial & Problem Solved</button>
+    
 
-    <!-- Modal Toggle & Auto-Open Script -->
+
+
+    
+
+
+    
+
     <script>
-        (function() {
-            const guideBtn = document.getElementById('guideBtn');
-            const guideBtnFloating = document.getElementById('guideBtnFloating');
-            const guideModal = document.getElementById('guideModal');
-            const guideClose = document.getElementById('guideClose');
-            const guideStart = document.getElementById('guideStart');
+    (function() {
+        const steps = [
+    {
+        "target": "#slider-target-x",
+        "title": "\ud83d\udc49 Step 1: Move Cartesian Target Sliders (X, Y, Z)",
+        "why": "Analytical Denavit-Hartenberg (D-H) inverse kinematics solve 6 joint angles in real time to reach the commanded tool center point."
+    },
+    {
+        "target": "#preset-singular",
+        "title": "\ud83d\udc49 Step 2: Click 'Singularity' Pose",
+        "why": "Tests Damped Least-Squares (DLS) solver near kinematic boundaries, regularizing joint speeds (\u2264 2.5 rad/s) to prevent overspeed trips."
+    },
+    {
+        "target": "#btn-collide",
+        "title": "\ud83d\udc49 Step 3: Click 'Simulate Impact (22 Nm)'",
+        "why": "Under ISO/TS 15066 safety standards, the Generalized Momentum Observer detects collision contact wrenches directly from motor currents."
+    },
+    {
+        "target": "#btn-reset-estop",
+        "title": "\ud83d\udc49 Step 4: Observe E-Stop Trip (<15 ms) and Click Reset",
+        "why": "Trips Category 0 Emergency Stop in <15 ms to prevent human operator injury, then safely resets once contact is cleared."
+    }
+];
+        const tourKey = 'tour_done_cobot-kinematics-momentum-twin';
+        let currentStep = 0;
+        let highlightedEl = null;
 
-            function openModal() {
-                if (guideModal) {
-                    guideModal.classList.add('active');
-                    guideModal.style.opacity = '1';
-                    guideModal.style.pointerEvents = 'auto';
-                }
+        const backdrop = document.getElementById('tourBackdrop');
+        const card = document.getElementById('tourCard');
+        const badge = document.getElementById('tourStepBadge');
+        const title = document.getElementById('tourTitle');
+        const why = document.getElementById('tourWhy');
+        const dotsContainer = document.getElementById('tourDots');
+        const prevBtn = document.getElementById('tourBtnPrev');
+        const nextBtn = document.getElementById('tourBtnNext');
+        const skipBtn = document.getElementById('tourBtnSkip');
+        const launcherBtn = document.getElementById('btnTourLauncher');
+        const guideBtn = document.getElementById('guideBtn');
+
+        if (!backdrop || !card) return;
+
+        // Build step dots
+        dotsContainer.innerHTML = '';
+        steps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'tour-dot' + (i === 0 ? ' active' : '');
+            dotsContainer.appendChild(dot);
+        });
+
+        function positionCard(targetEl) {
+            if (window.innerWidth <= 640) {
+                card.style.top = 'auto';
+                card.style.bottom = '12px';
+                card.style.left = '10px';
+                card.style.right = '10px';
+                card.style.transform = 'none';
+                return;
             }
 
-            function closeModal() {
-                if (guideModal) {
-                    guideModal.classList.remove('active');
-                    guideModal.style.opacity = '0';
-                    guideModal.style.pointerEvents = 'none';
-                }
-                try {
-                    sessionStorage.setItem('guide_dismissed_' + window.location.pathname, '1');
-                } catch(e) {}
+            const rect = targetEl.getBoundingClientRect();
+            const cardW = 420;
+            let top = rect.bottom + 14;
+            let left = rect.left;
+
+            if (top + 210 > window.innerHeight && rect.top > 220) {
+                top = rect.top - 190;
+            }
+            if (left + cardW > window.innerWidth) {
+                left = window.innerWidth - cardW - 20;
+            }
+            if (left < 20) left = 20;
+
+            card.style.top = Math.max(20, top) + 'px';
+            card.style.left = left + 'px';
+            card.style.bottom = 'auto';
+            card.style.right = 'auto';
+            card.style.transform = 'none';
+        }
+
+        function showStep(index) {
+            if (index < 0 || index >= steps.length) return;
+            currentStep = index;
+
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
             }
 
-            if (guideBtn) guideBtn.addEventListener('click', openModal);
-            if (guideBtnFloating) guideBtnFloating.addEventListener('click', openModal);
-            if (guideClose) guideClose.addEventListener('click', closeModal);
-            if (guideStart) guideStart.addEventListener('click', closeModal);
-
-            if (guideModal) {
-                guideModal.addEventListener('click', function(e) {
-                    if (e.target === guideModal) closeModal();
-                });
-            }
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && guideModal && guideModal.classList.contains('active')) {
-                    closeModal();
-                }
-            });
-
-            // Auto-open on initial visit for immediate problem & tutorial clarity on both mobile and desktop
+            const step = steps[index];
+            let targetEl = null;
             try {
-                const dismissed = sessionStorage.getItem('guide_dismissed_' + window.location.pathname);
-                const forceOpen = window.location.search.indexOf('guide') !== -1;
-                if (!dismissed || forceOpen) {
-                    setTimeout(openModal, 120);
-                }
-            } catch(e) {
-                setTimeout(openModal, 120);
+                targetEl = document.querySelector(step.target);
+            } catch(e) {}
+
+            badge.textContent = `Step ${index + 1} of ${steps.length}`;
+            title.textContent = step.title;
+            why.innerHTML = `<strong>Why:</strong> ${step.why}`;
+
+            // Update dot indicators
+            const dots = dotsContainer.querySelectorAll('.tour-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+
+            // Button label updates
+            prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
+            nextBtn.textContent = index === steps.length - 1 ? 'Finish 🚀' : 'Next ➔';
+
+            if (targetEl) {
+                highlightedEl = targetEl;
+                targetEl.classList.add('tour-spotlight-active');
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+                setTimeout(() => positionCard(targetEl), 140);
+            } else {
+                card.style.top = '50%';
+                card.style.left = '50%';
+                card.style.transform = 'translate(-50%, -50%)';
             }
-        })();
+
+            backdrop.classList.add('active');
+            card.classList.add('active');
+        }
+
+        function endTour() {
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
+                highlightedEl = null;
+            }
+            backdrop.classList.remove('active');
+            card.classList.remove('active');
+            try {
+                sessionStorage.setItem(tourKey, '1');
+            } catch(e) {}
+        }
+
+        function startTour() {
+            showStep(0);
+        }
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep < steps.length - 1) {
+                showStep(currentStep + 1);
+            } else {
+                endTour();
+            }
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep > 0) showStep(currentStep - 1);
+        });
+
+        skipBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endTour();
+        });
+
+        backdrop.addEventListener('click', endTour);
+
+        if (launcherBtn) {
+            launcherBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        if (guideBtn) {
+            guideBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        // Auto-launch guided spotlight tour on first visit
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    const completed = sessionStorage.getItem(tourKey);
+                    if (!completed) {
+                        startTour();
+                    }
+                } catch(e) {
+                    startTour();
+                }
+            }, 450);
+        });
+
+        // URL parameter override: ?tour=1
+        if (window.location.search.indexOf('tour') !== -1) {
+            setTimeout(startTour, 300);
+        }
+    })();
     </script>
 
+
+    
+
+    <script>
+    (function() {
+        const steps = [
+    {
+        "target": "#slider-target-x",
+        "title": "\ud83d\udc49 Step 1: Move Cartesian Target Sliders (X, Y, Z)",
+        "why": "Analytical Denavit-Hartenberg (D-H) inverse kinematics solve 6 joint angles in real time to reach the commanded tool center point."
+    },
+    {
+        "target": "#preset-singular",
+        "title": "\ud83d\udc49 Step 2: Click 'Singularity' Pose",
+        "why": "Tests Damped Least-Squares (DLS) solver near kinematic boundaries, regularizing joint speeds (\u2264 2.5 rad/s) to prevent overspeed trips."
+    },
+    {
+        "target": "#btn-collide",
+        "title": "\ud83d\udc49 Step 3: Click 'Simulate Impact (22 Nm)'",
+        "why": "Under ISO/TS 15066 safety standards, the Generalized Momentum Observer detects collision contact wrenches directly from motor currents."
+    },
+    {
+        "target": "#btn-reset-estop",
+        "title": "\ud83d\udc49 Step 4: Observe E-Stop Trip (<15 ms) and Click Reset",
+        "why": "Trips Category 0 Emergency Stop in <15 ms to prevent human operator injury, then safely resets once contact is cleared."
+    }
+];
+        const tourKey = 'tour_done_cobot-kinematics-momentum-twin';
+        let currentStep = 0;
+        let highlightedEl = null;
+
+        const backdrop = document.getElementById('tourBackdrop');
+        const card = document.getElementById('tourCard');
+        const badge = document.getElementById('tourStepBadge');
+        const title = document.getElementById('tourTitle');
+        const why = document.getElementById('tourWhy');
+        const dotsContainer = document.getElementById('tourDots');
+        const prevBtn = document.getElementById('tourBtnPrev');
+        const nextBtn = document.getElementById('tourBtnNext');
+        const skipBtn = document.getElementById('tourBtnSkip');
+        const launcherBtn = document.getElementById('btnTourLauncher');
+        const guideBtn = document.getElementById('guideBtn');
+
+        if (!backdrop || !card) return;
+
+        // Build step dots
+        dotsContainer.innerHTML = '';
+        steps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'tour-dot' + (i === 0 ? ' active' : '');
+            dotsContainer.appendChild(dot);
+        });
+
+        function positionCard(targetEl) {
+            if (window.innerWidth <= 640) {
+                if (targetEl) {
+                    const rect = targetEl.getBoundingClientRect();
+                    // If target is in lower half of screen, dock card at top so control is unobstructed!
+                    if (rect.top > window.innerHeight * 0.44) {
+                        card.style.top = '12px';
+                        card.style.bottom = 'auto';
+                    } else {
+                        card.style.top = 'auto';
+                        card.style.bottom = '12px';
+                    }
+                } else {
+                    card.style.top = 'auto';
+                    card.style.bottom = '12px';
+                }
+                card.style.left = '10px';
+                card.style.right = '10px';
+                card.style.transform = 'none';
+                return;
+            }
+
+            if (!targetEl) {
+                card.style.top = '50%';
+                card.style.left = '50%';
+                card.style.transform = 'translate(-50%, -50%)';
+                return;
+            }
+
+            const rect = targetEl.getBoundingClientRect();
+            const cardW = 420;
+            let top = rect.bottom + 14;
+            let left = rect.left;
+
+            if (top + 210 > window.innerHeight && rect.top > 220) {
+                top = rect.top - 190;
+            }
+            if (left + cardW > window.innerWidth) {
+                left = window.innerWidth - cardW - 20;
+            }
+            if (left < 20) left = 20;
+
+            card.style.top = Math.max(20, top) + 'px';
+            card.style.left = left + 'px';
+            card.style.bottom = 'auto';
+            card.style.right = 'auto';
+            card.style.transform = 'none';
+        }
+
+        function showStep(index) {
+            if (index < 0 || index >= steps.length) return;
+            currentStep = index;
+
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
+            }
+
+            const step = steps[index];
+            let targetEl = null;
+            try {
+                targetEl = document.querySelector(step.target);
+            } catch(e) {}
+
+            badge.textContent = `Step ${index + 1} of ${steps.length}`;
+            title.textContent = step.title;
+            why.innerHTML = `<strong>Why:</strong> ${step.why}`;
+
+            // Update dot indicators
+            const dots = dotsContainer.querySelectorAll('.tour-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+
+            // Button label updates
+            prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
+            nextBtn.textContent = index === steps.length - 1 ? 'Finish 🚀' : 'Next ➔';
+
+            if (targetEl) {
+                highlightedEl = targetEl;
+                targetEl.classList.add('tour-spotlight-active');
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                setTimeout(() => positionCard(targetEl), 150);
+            } else {
+                positionCard(null);
+            }
+
+            backdrop.classList.add('active');
+            card.classList.add('active');
+        }
+
+        function endTour() {
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
+                highlightedEl = null;
+            }
+            backdrop.classList.remove('active');
+            card.classList.remove('active');
+            try {
+                sessionStorage.setItem(tourKey, '1');
+            } catch(e) {}
+        }
+
+        function startTour() {
+            showStep(0);
+        }
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep < steps.length - 1) {
+                showStep(currentStep + 1);
+            } else {
+                endTour();
+            }
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep > 0) showStep(currentStep - 1);
+        });
+
+        skipBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endTour();
+        });
+
+        backdrop.addEventListener('click', endTour);
+
+        if (launcherBtn) {
+            launcherBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        if (guideBtn) {
+            guideBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        // Auto-launch guided spotlight tour on first visit
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    const completed = sessionStorage.getItem(tourKey);
+                    if (!completed) {
+                        startTour();
+                    }
+                } catch(e) {
+                    startTour();
+                }
+            }, 450);
+        });
+
+        // URL parameter override: ?tour=1
+        if (window.location.search.indexOf('tour') !== -1) {
+            setTimeout(startTour, 300);
+        }
+    })();
+    </script>
+<!-- Interactive Guided Spotlight Tour Engine -->
+    <div class="tour-backdrop" id="tourBackdrop"></div>
+    <div class="tour-card" id="tourCard">
+        <div class="tour-badge-row">
+            <span class="tour-step-badge" id="tourStepBadge">Step 1 of 4</span>
+            <button class="tour-btn-skip" id="tourBtnSkip">✕ Skip Tour</button>
+        </div>
+        <h4 class="tour-action-title" id="tourTitle">Action Title</h4>
+        <div class="tour-why-box" id="tourWhy"><strong>Why:</strong> Reason</div>
+        <div class="tour-footer">
+            <div class="tour-dots" id="tourDots"></div>
+            <div class="tour-controls">
+                <button class="btn-tour-nav btn-tour-prev" id="tourBtnPrev">⇦ Back</button>
+                <button class="btn-tour-nav btn-tour-next" id="tourBtnNext">Next ➔</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Tour Launcher Pill -->
+    <button class="btn-tour-launcher" id="btnTourLauncher">🎮 Guided Tour</button>
+
+    <script>
+    (function() {
+        const steps = [
+    {
+        "target": "#slider-target-x",
+        "title": "\ud83d\udc49 Step 1: Move Cartesian Target Sliders (X, Y, Z)",
+        "why": "Analytical Denavit-Hartenberg (D-H) inverse kinematics solve 6 joint angles in real time to reach the commanded tool center point."
+    },
+    {
+        "target": "#preset-singular",
+        "title": "\ud83d\udc49 Step 2: Click 'Singularity' Pose",
+        "why": "Tests Damped Least-Squares (DLS) solver near kinematic boundaries, regularizing joint speeds (\u2264 2.5 rad/s) to prevent overspeed trips."
+    },
+    {
+        "target": "#btn-collide",
+        "title": "\ud83d\udc49 Step 3: Click 'Simulate Impact (22 Nm)'",
+        "why": "Under ISO/TS 15066 safety standards, the Generalized Momentum Observer detects collision contact wrenches directly from motor currents."
+    },
+    {
+        "target": "#btn-reset-estop",
+        "title": "\ud83d\udc49 Step 4: Observe E-Stop Trip (<15 ms) and Click Reset",
+        "why": "Trips Category 0 Emergency Stop in <15 ms to prevent human operator injury, then safely resets once contact is cleared."
+    }
+];
+        const tourKey = 'tour_done_cobot-kinematics-momentum-twin';
+        let currentStep = 0;
+        let highlightedEl = null;
+
+        const backdrop = document.getElementById('tourBackdrop');
+        const card = document.getElementById('tourCard');
+        const badge = document.getElementById('tourStepBadge');
+        const title = document.getElementById('tourTitle');
+        const why = document.getElementById('tourWhy');
+        const dotsContainer = document.getElementById('tourDots');
+        const prevBtn = document.getElementById('tourBtnPrev');
+        const nextBtn = document.getElementById('tourBtnNext');
+        const skipBtn = document.getElementById('tourBtnSkip');
+        const launcherBtn = document.getElementById('btnTourLauncher');
+        const guideBtn = document.getElementById('guideBtn');
+
+        if (!backdrop || !card) return;
+
+        // Build step dots
+        dotsContainer.innerHTML = '';
+        steps.forEach((_, i) => {
+            const dot = document.createElement('div');
+            dot.className = 'tour-dot' + (i === 0 ? ' active' : '');
+            dotsContainer.appendChild(dot);
+        });
+
+        function positionCard(targetEl) {
+            if (window.innerWidth <= 640) {
+                if (targetEl) {
+                    const rect = targetEl.getBoundingClientRect();
+                    // If target is in lower half of screen, dock card at top so control is unobstructed!
+                    if (rect.top > window.innerHeight * 0.44) {
+                        card.style.top = '12px';
+                        card.style.bottom = 'auto';
+                    } else {
+                        card.style.top = 'auto';
+                        card.style.bottom = '12px';
+                    }
+                } else {
+                    card.style.top = 'auto';
+                    card.style.bottom = '12px';
+                }
+                card.style.left = '10px';
+                card.style.right = '10px';
+                card.style.transform = 'none';
+                return;
+            }
+
+            if (!targetEl) {
+                card.style.top = '50%';
+                card.style.left = '50%';
+                card.style.transform = 'translate(-50%, -50%)';
+                return;
+            }
+
+            const rect = targetEl.getBoundingClientRect();
+            const cardW = 420;
+            let top = rect.bottom + 14;
+            let left = rect.left;
+
+            if (top + 210 > window.innerHeight && rect.top > 220) {
+                top = rect.top - 190;
+            }
+            if (left + cardW > window.innerWidth) {
+                left = window.innerWidth - cardW - 20;
+            }
+            if (left < 20) left = 20;
+
+            card.style.top = Math.max(20, top) + 'px';
+            card.style.left = left + 'px';
+            card.style.bottom = 'auto';
+            card.style.right = 'auto';
+            card.style.transform = 'none';
+        }
+
+        function showStep(index) {
+            if (index < 0 || index >= steps.length) return;
+            currentStep = index;
+
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
+            }
+
+            const step = steps[index];
+            let targetEl = null;
+            try {
+                targetEl = document.querySelector(step.target);
+            } catch(e) {}
+
+            badge.textContent = `Step ${index + 1} of ${steps.length}`;
+            title.textContent = step.title;
+            why.innerHTML = `<strong>Why:</strong> ${step.why}`;
+
+            // Update dot indicators
+            const dots = dotsContainer.querySelectorAll('.tour-dot');
+            dots.forEach((d, i) => d.classList.toggle('active', i === index));
+
+            // Button label updates
+            prevBtn.style.visibility = index === 0 ? 'hidden' : 'visible';
+            nextBtn.textContent = index === steps.length - 1 ? 'Finish 🚀' : 'Next ➔';
+
+            if (targetEl) {
+                highlightedEl = targetEl;
+                targetEl.classList.add('tour-spotlight-active');
+                targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+                setTimeout(() => positionCard(targetEl), 150);
+            } else {
+                positionCard(null);
+            }
+
+            backdrop.classList.add('active');
+            card.classList.add('active');
+        }
+
+        function endTour() {
+            if (highlightedEl) {
+                highlightedEl.classList.remove('tour-spotlight-active');
+                highlightedEl = null;
+            }
+            backdrop.classList.remove('active');
+            card.classList.remove('active');
+            try {
+                sessionStorage.setItem(tourKey, '1');
+            } catch(e) {}
+        }
+
+        function startTour() {
+            showStep(0);
+        }
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep < steps.length - 1) {
+                showStep(currentStep + 1);
+            } else {
+                endTour();
+            }
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentStep > 0) showStep(currentStep - 1);
+        });
+
+        skipBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            endTour();
+        });
+
+        backdrop.addEventListener('click', endTour);
+
+        if (launcherBtn) {
+            launcherBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        if (guideBtn) {
+            guideBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                startTour();
+            });
+        }
+
+        // Auto-launch guided spotlight tour on first visit
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                try {
+                    const completed = sessionStorage.getItem(tourKey);
+                    if (!completed) {
+                        startTour();
+                    }
+                } catch(e) {
+                    startTour();
+                }
+            }, 450);
+        });
+
+        // URL parameter override: ?tour=1
+        if (window.location.search.indexOf('tour') !== -1) {
+            setTimeout(startTour, 300);
+        }
+    })();
+    </script>
 </body>
 </html>

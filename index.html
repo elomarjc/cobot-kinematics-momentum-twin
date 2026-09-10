@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Collaborative Robot Kinematics & Momentum Observer Digital Twin</title>
-    <link rel="stylesheet" href="css/style.css?v=4.0">
+    <link rel="stylesheet" href="css/style.css?v=5.0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
@@ -540,15 +540,16 @@
         }
     })();
     </script>
-<!-- Interactive Guided Spotlight Tour Engine -->
-    <div class="tour-backdrop" id="tourBackdrop"></div>
+
+<!-- Interactive Guided Yellow Spotlight Tour Engine (Zero Blur) -->
     <div class="tour-card" id="tourCard">
         <div class="tour-badge-row">
             <span class="tour-step-badge" id="tourStepBadge">Step 1 of 4</span>
             <button class="tour-btn-skip" id="tourBtnSkip">✕ Skip Tour</button>
         </div>
         <h4 class="tour-action-title" id="tourTitle">Action Title</h4>
-        <div class="tour-why-box" id="tourWhy"><strong>Why:</strong> Reason</div>
+        <div class="tour-happens-box" id="tourHappens"><strong>⚡ What Happens:</strong> Live reaction</div>
+        <div class="tour-why-box" id="tourWhy"><strong>💡 Why:</strong> Reason</div>
         <div class="tour-footer">
             <div class="tour-dots" id="tourDots"></div>
             <div class="tour-controls">
@@ -567,32 +568,36 @@
     {
         "target": "#slider-target-x",
         "title": "\ud83d\udc49 Step 1: Move Cartesian Target Sliders (X, Y, Z)",
-        "why": "Analytical Denavit-Hartenberg (D-H) inverse kinematics solve 6 joint angles in real time to reach the commanded tool center point."
+        "happens": "The 3D robotic arm smoothly reconfigures all 6 joints as analytical D-H inverse kinematics solve joint angles in real time.",
+        "why": "Translates operator pick-and-place end-effector coordinates into coordinated multi-axis servo motor angles."
     },
     {
         "target": "#preset-singular",
         "title": "\ud83d\udc49 Step 2: Click 'Singularity' Pose",
-        "why": "Tests Damped Least-Squares (DLS) solver near kinematic boundaries, regularizing joint speeds (\u2264 2.5 rad/s) to prevent overspeed trips."
+        "happens": "The robot moves near its wrist singularity; joint velocity meters remain bounded (\u22642.5 rad/s) without runaway trips.",
+        "why": "Damped Least-Squares (DLS) Levenberg-Marquardt regularization prevents mathematical breakdown near kinematic singularities."
     },
     {
         "target": "#btn-collide",
         "title": "\ud83d\udc49 Step 3: Click 'Simulate Impact (22 Nm)'",
-        "why": "Under ISO/TS 15066 safety standards, the Generalized Momentum Observer detects collision contact wrenches directly from motor currents."
+        "happens": "An unexpected collision impacts link 4; the Generalized Momentum Observer detects the disturbance wrench within 6 milliseconds.",
+        "why": "Complies with ISO/TS 15066 cobot safety, detecting collisions directly from motor currents without wrist force sensors."
     },
     {
         "target": "#btn-reset-estop",
         "title": "\ud83d\udc49 Step 4: Observe E-Stop Trip (<15 ms) and Click Reset",
-        "why": "Trips Category 0 Emergency Stop in <15 ms to prevent human operator injury, then safely resets once contact is cleared."
+        "happens": "Category 0 Emergency Stop brakes all joints to zero within 15 ms, locking brakes until reset once contact is cleared.",
+        "why": "Eliminates injury hazards for human operators working alongside collaborative robots."
     }
 ];
         const tourKey = 'tour_done_cobot-kinematics-momentum-twin';
         let currentStep = 0;
         let highlightedEl = null;
 
-        const backdrop = document.getElementById('tourBackdrop');
         const card = document.getElementById('tourCard');
         const badge = document.getElementById('tourStepBadge');
         const title = document.getElementById('tourTitle');
+        const happens = document.getElementById('tourHappens');
         const why = document.getElementById('tourWhy');
         const dotsContainer = document.getElementById('tourDots');
         const prevBtn = document.getElementById('tourBtnPrev');
@@ -601,7 +606,7 @@
         const launcherBtn = document.getElementById('btnTourLauncher');
         const guideBtn = document.getElementById('guideBtn');
 
-        if (!backdrop || !card) return;
+        if (!card) return;
 
         // Build step dots
         dotsContainer.innerHTML = '';
@@ -615,7 +620,7 @@
             if (window.innerWidth <= 640) {
                 if (targetEl) {
                     const rect = targetEl.getBoundingClientRect();
-                    // If target is in lower half of screen, dock card at top so control is unobstructed!
+                    // If target is in lower half of screen, dock card at top so control is 100% visible!
                     if (rect.top > window.innerHeight * 0.44) {
                         card.style.top = '12px';
                         card.style.bottom = 'auto';
@@ -645,8 +650,8 @@
             let top = rect.bottom + 14;
             let left = rect.left;
 
-            if (top + 210 > window.innerHeight && rect.top > 220) {
-                top = rect.top - 190;
+            if (top + 230 > window.innerHeight && rect.top > 240) {
+                top = rect.top - 210;
             }
             if (left + cardW > window.innerWidth) {
                 left = window.innerWidth - cardW - 20;
@@ -676,7 +681,8 @@
 
             badge.textContent = `Step ${index + 1} of ${steps.length}`;
             title.textContent = step.title;
-            why.innerHTML = `<strong>Why:</strong> ${step.why}`;
+            happens.innerHTML = `<strong>⚡ What Happens:</strong> ${step.happens}`;
+            why.innerHTML = `<strong>💡 Why:</strong> ${step.why}`;
 
             // Update dot indicators
             const dots = dotsContainer.querySelectorAll('.tour-dot');
@@ -690,12 +696,11 @@
                 highlightedEl = targetEl;
                 targetEl.classList.add('tour-spotlight-active');
                 targetEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
-                setTimeout(() => positionCard(targetEl), 150);
+                setTimeout(() => positionCard(targetEl), 120);
             } else {
                 positionCard(null);
             }
 
-            backdrop.classList.add('active');
             card.classList.add('active');
         }
 
@@ -704,7 +709,6 @@
                 highlightedEl.classList.remove('tour-spotlight-active');
                 highlightedEl = null;
             }
-            backdrop.classList.remove('active');
             card.classList.remove('active');
             try {
                 sessionStorage.setItem(tourKey, '1');
@@ -734,8 +738,6 @@
             endTour();
         });
 
-        backdrop.addEventListener('click', endTour);
-
         if (launcherBtn) {
             launcherBtn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -750,7 +752,7 @@
             });
         }
 
-        // Auto-launch guided spotlight tour on first visit
+        // Auto-launch guided yellow tour on first visit
         window.addEventListener('load', () => {
             setTimeout(() => {
                 try {

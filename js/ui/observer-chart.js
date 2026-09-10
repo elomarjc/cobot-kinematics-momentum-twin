@@ -35,12 +35,12 @@ export class ObserverChart {
 
         const padLeft = 45;
         const padRight = 15;
-        const padTop = 15;
+        const padTop = 28;
         const padBottom = 25;
         const plotW = width - padLeft - padRight;
         const plotH = height - padTop - padBottom;
 
-        const halfH = (plotH - 15) / 2;
+        const halfH = (plotH - 25) / 2;
 
         // Top Plot: Residual Torque (0 to 25 Nm)
         const topY = (tau) => padTop + halfH - (tau / 25.0) * halfH;
@@ -114,7 +114,7 @@ export class ObserverChart {
         ctx.textAlign = 'left';
         ctx.font = 'bold 11px Inter, sans-serif';
         ctx.fillStyle = '#f8fafc';
-        ctx.fillText('Generalized Momentum Observer Residual ||τ_ext|| (Nm) vs. ISO/TS 15066 Limit', padLeft + 10, padTop + 14);
-        ctx.fillText('Yoshikawa Manipulability Index w(q) (Singularity Proximity)', padLeft + 10, botTop + 14);
+        ctx.fillText('Generalized Momentum Observer Residual ||τ_ext|| (Nm) vs. ISO/TS 15066 Limit', padLeft + 6, padTop - 8);
+        ctx.fillText('Yoshikawa Manipulability Index w(q) (Singularity Proximity)', padLeft + 6, botTop - 6);
     }
 }

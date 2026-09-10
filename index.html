@@ -23,20 +23,182 @@
 <section class="viewport-panel live-sticky-screen">
 <div class="canvas-container">
 <div id="webgl-container"></div>
+  <!-- Floating Cobot HUD Overlay -->
+  <div class="hud-overlay-layer">
+    <!-- Top-Left HUD Controls -->
+    <div class="hud-top-left">
+      <!-- CAM Pill -->
+      <div class="hud-pill-box">
+        <div class="hud-pill-inner">
+          <svg class="hud-pill-icon" fill="none" height="13" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <div class="hud-text-stack">
+            <span class="hud-mini-label">VIEW</span>
+            <span class="hud-val-text" id="hud-cam-label">PERSPECTIVE 3D</span>
+          </div>
+          <span class="hud-caret">▾</span>
+          <select class="hud-hidden-select" id="select-view">
+            <option value="PERSPECTIVE" selected>PERSPECTIVE 3D</option>
+            <option value="TOP">TOP DOWN (X-Y)</option>
+            <option value="SIDE">SIDE ELEVATION (X-Z)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- SOLVER Pill -->
+      <div class="hud-pill-box">
+        <div class="hud-pill-inner">
+          <svg class="hud-pill-icon" fill="none" height="13" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="13">
+            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+          </svg>
+          <div class="hud-text-stack">
+            <span class="hud-mini-label">IK SOLVER</span>
+            <span class="hud-val-text" id="hud-solver-label">DAMPED LEAST SQUARES</span>
+          </div>
+          <span class="hud-caret">▾</span>
+          <select class="hud-hidden-select" id="select-solver">
+            <option value="DLS" selected>DAMPED LEAST SQUARES (λ²)</option>
+            <option value="PINV">PSEUDO-INVERSE (J⁺)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Quick Telemetry Tag Pill -->
+      <div class="hud-tags-row">
+        <div class="hud-tag-wrapper">
+          <button class="hud-tag-pill active" id="btn-quick-observer">
+            <span class="hud-dot-active">●</span>
+            <span id="hud-observer-tag">MOMENTUM OBS: CLEAR</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Top-Right Floating Actions Cluster (Menu, Settings, Fullscreen) -->
+    <div class="hud-top-right">
+      <button class="hud-circle-btn" id="btn-hud-menu" title="Engineering Whitepaper & Specifications">
+        <svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16"><line x1="3" x2="21" y1="6" y2="6"></line><line x1="3" x2="21" y1="12" y2="12"></line><line x1="3" x2="21" y1="18" y2="18"></line></svg>
+      </button>
+      <button class="hud-circle-btn" id="btn-hud-settings" title="Kinematics & Telemetry Drawer">
+        <svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+      </button>
+      <button class="hud-circle-btn" id="btn-hud-fullscreen" title="Toggle Fullscreen">
+        <svg fill="none" height="16" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24" width="16"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>
+      </button>
+    </div>
+
+    <!-- Left Vertical REACH X HUD Slider -->
+    <div class="hud-vertical-rail hud-left-rail">
+      <div class="hud-rail-top">
+        <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14"><polyline points="15 3 21 3 21 9"></polyline><polyline points="9 21 3 21 3 15"></polyline><line x1="21" y1="3" x2="14" y2="10"></line><line x1="3" y1="21" x2="10" y2="14"></line></svg>
+        <span class="hud-rail-title">REACH X</span>
+      </div>
+      <div class="hud-rail-track-container" id="reach-rail-container">
+        <div class="hud-rail-track">
+          <div class="hud-rail-fill" id="reach-rail-fill" style="height: 50%;"></div>
+          <div class="hud-rail-thumb" id="reach-rail-thumb" style="bottom: 50%;"></div>
+        </div>
+        <input class="hud-rail-range" id="slider-reach-vertical" max="0.6" min="-0.6" step="0.01" type="range" value="0.35"/>
+      </div>
+      <div class="hud-rail-val-pill" id="val-reach-pill">X 0.35m</div>
+    </div>
+
+    <!-- Right Vertical HEIGHT Z HUD Slider -->
+    <div class="hud-vertical-rail hud-right-rail">
+      <div class="hud-rail-top">
+        <svg fill="none" height="14" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" width="14"><line x1="12" x2="12" y1="19" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>
+        <span class="hud-rail-title">HEIGHT Z</span>
+      </div>
+      <div class="hud-rail-track-container" id="height-rail-container">
+        <div class="hud-rail-track">
+          <div class="hud-rail-fill" id="height-rail-fill" style="height: 60%;"></div>
+          <div class="hud-rail-thumb" id="height-rail-thumb" style="bottom: 60%;"></div>
+        </div>
+        <input class="hud-rail-range" id="slider-height-vertical" max="0.8" min="0.1" step="0.01" type="range" value="0.45"/>
+      </div>
+      <div class="hud-rail-val-pill is-live" id="val-height-pill">Z 0.45m</div>
+      <button class="hud-rail-pause-btn btn-pause-toggle" id="btn-rail-pause" title="Pause / Resume Simulation">
+        <span id="rail-pause-icon">⏸</span>
+      </button>
+    </div>
+
+    <!-- Bottom Area: Trigger Pill + Centered Transport + Modes Bar -->
+    <div class="hud-bottom-area">
+      <div class="hud-bottom-subrow">
+        <!-- Left Controls Drawer Trigger Pill -->
+        <button class="hud-aocs-trigger-pill" id="btn-trigger-controls-drawer">
+          <span class="aocs-trigger-icon">🦾</span>
+          <div class="aocs-trigger-text">
+            <span class="aocs-trigger-title">KINEMATICS</span>
+            <span class="aocs-trigger-sub">DLS &amp; DYNAMICS</span>
+          </div>
+          <span class="aocs-trigger-chevron">›</span>
+        </button>
+
+        <!-- Center Transport Cluster -->
+        <div class="hud-sim-transport">
+          <button class="hud-transport-step" id="btn-transport-step-back" title="Step Back">‹</button>
+          <button class="hud-transport-pause btn-pause-toggle" id="btn-transport-pause">
+            <span id="hud-pause-icon">⏸</span>
+            <span id="hud-pause-label">PAUSE</span>
+          </button>
+          <button class="hud-transport-step" id="btn-transport-step-fwd" title="Step Forward">›</button>
+        </div>
+      </div>
+
+      <!-- Bottom Row: 4 Primary Operational Mode Cards -->
+      <div class="hud-flight-modes-bar">
+        <button class="hud-mode-card active" id="hud-mode-home">
+          <div class="mode-card-header">
+            <span class="mode-card-icon">🏠</span>
+            <span class="mode-card-title">HOME POSE</span>
+          </div>
+          <span class="mode-card-sub">Nominal Ready Stance</span>
+        </button>
+
+        <button class="hud-mode-card" id="hud-mode-pick">
+          <div class="mode-card-header">
+            <span class="mode-card-icon">📦</span>
+            <span class="mode-card-title">PICK &amp; PLACE</span>
+          </div>
+          <span class="mode-card-sub">Conveyor Target Pose</span>
+        </button>
+
+        <button class="hud-mode-card" id="hud-mode-singular">
+          <div class="mode-card-header">
+            <span class="mode-card-icon">⚠️</span>
+            <span class="mode-card-title">SINGULARITY</span>
+          </div>
+          <span class="mode-card-sub">Wrist Alignment (det=0)</span>
+        </button>
+
+        <button class="hud-mode-card" id="hud-mode-impact">
+          <div class="mode-card-header">
+            <span class="mode-card-icon">💥</span>
+            <span class="mode-card-title">TEST IMPACT</span>
+          </div>
+          <span class="mode-card-sub">Trigger Disturbance τ_ext</span>
+        </button>
+      </div>
+    </div>
+  </div>
 </div>
 <div class="chart-panel">
 <canvas class="chart-canvas" height="220" id="chart-canvas" width="720"></canvas>
 </div>
 </section>
-<aside class="sidebar mobile-drawer-pane"><div class="mobile-drawer-header" id="mobileDrawerHeader">
-<div class="drawer-title-group">
-<span style="font-size: 1.1rem;">🎛️</span>
-<span class="drawer-badge">COBOT SAFETY &amp; KINEMATICS</span>
+<div class="telemetry-backdrop" id="telemetry-backdrop"></div>
+<aside class="sidebar telemetry-drawer" id="telemetry-drawer">
+<div class="telemetry-drawer-header">
+  <div class="drawer-header-brand">
+    <span style="font-size: 1.1rem;">🦾</span>
+    <span class="drawer-title">COBOT KINEMATICS &amp; MOMENTUM</span>
+  </div>
+  <button class="drawer-close-btn" id="btn-close-telemetry">✕ CLOSE</button>
 </div>
-<div class="drawer-toggle-btn" id="drawerToggleBtn">
-<span id="drawerToggleText">▲ OPEN CONTROLS</span>
-</div>
-</div><div class="mobile-drawer-body" id="mobileDrawerBody">
+<div class="telemetry-drawer-body" id="mobileDrawerBody">
 <div class="card">
 <div class="card-title">Cartesian Target Position</div>
 <div class="control-group">
@@ -387,5 +549,22 @@
   }
 })();
 </script>
+<!-- Help & Technical Whitepaper Modal -->
+<div class="modal-overlay" id="help-modal" style="display: none;">
+  <div class="modal-card">
+    <div class="modal-header">
+      <span>6-DOF Cobot Kinematics &amp; Momentum Observer — Engineering Whitepaper</span>
+      <button class="btn-action" id="btn-close-modal" style="padding: 2px 8px;">✕</button>
+    </div>
+    <div class="modal-body">
+      <h4>1. 6-DOF Anthropomorphic Manipulator Model</h4>
+      <p>Simulates a standard industrial collaborative robot arm (UR5/UR10 class) utilizing standard Denavit-Hartenberg (DH) kinematic conventions with spherical wrist architecture.</p>
+      <h4>2. Damped Least Squares (DLS) Singularity Avoidance</h4>
+      <p>Resolves inverse differential kinematics near kinematic singularities (boundary and wrist alignments where manipulability <i>w</i> = &radic;det(<i>J J</i><sup>T</sup>) &rarr; 0) by damping the pseudo-inverse: <i>J</i><sup>*</sup> = <i>J</i><sup>T</sup> (<i>J J</i><sup>T</sup> + &lambda;² <i>I</i>)<sup>-1</sup>.</p>
+      <h4>3. Generalized Momentum Observer Collision Detection</h4>
+      <p>Estimates external contact torques &tau;<sub>ext</sub> without dedicated joint torque sensors by integrating robot generalized momentum <i>p</i> = <i>M</i>(<i>q</i>) &middot; <i>q&#775;</i>: <i>r&#775;</i> = <i>K</i><sub><i>O</i></sub> [ &tau; + <i>C</i><sup>T</sup> <i>q&#775;</i> - <i>g</i>(<i>q</i>) + <i>r</i> ] - <i>K</i><sub><i>O</i></sub> <i>p&#775;</i>. Automatically trips safety E-stop upon exceeding threshold &tau;<sub>threshold</sub> = 15 N&middot;m.</p>
+    </div>
+  </div>
+</div>
 </body>
 </html>

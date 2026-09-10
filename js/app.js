@@ -29,6 +29,7 @@ class CobotApp {
         this.chart = new ObserverChart('chart-canvas');
 
         this.initControls();
+        this.setupFloatingHUD();
         this.lastTime = performance.now();
         this.loop = this.loop.bind(this);
         requestAnimationFrame(this.loop);
@@ -251,4 +252,181 @@ class CobotApp {
 
 window.addEventListener('DOMContentLoaded', () => {
     window.cobotApp = new CobotApp();
+
+    setupFloatingHUD() {
+        // 1. Drawer open/close
+        const drawer = document.getElementById('telemetry-drawer');
+        const backdrop = document.getElementById('telemetry-backdrop');
+        const openDrawer = () => {
+            drawer?.classList.add('open');
+            backdrop?.classList.add('active');
+        };
+        const closeDrawer = () => {
+            drawer?.classList.remove('open');
+            backdrop?.classList.remove('active');
+        };
+
+        document.getElementById('btn-hud-settings')?.addEventListener('click', openDrawer);
+        document.getElementById('btn-close-telemetry')?.addEventListener('click', closeDrawer);
+        backdrop?.addEventListener('click', closeDrawer);
+
+        // 2. Fullscreen Toggle
+        const fsBtn = document.getElementById('btn-hud-fullscreen');
+        fsBtn?.addEventListener('click', () => {
+            if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+                if (document.documentElement.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {
+                        document.body.classList.toggle('immersive-fullscreen');
+                    });
+                } else if (document.documentElement.webkitRequestFullscreen) {
+                    document.documentElement.webkitRequestFullscreen();
+                } else {
+                    document.body.classList.toggle('immersive-fullscreen');
+                }
+            } else {
+                if (document.exitFullscreen) document.exitFullscreen().catch(() => {});
+                else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+                document.body.classList.remove('immersive-fullscreen');
+            }
+        });
+
+        // 3. Pause Simulation Toggle
+        let isPaused = false;
+        const transPause = document.getElementById('btn-transport-pause');
+        const railPause = document.getElementById('btn-rail-pause');
+        const hudPauseIcon = document.getElementById('hud-pause-icon');
+        const hudPauseLabel = document.getElementById('hud-pause-label');
+        const railPauseIcon = document.getElementById('rail-pause-icon');
+
+        const togglePause = () => {
+            isPaused = !isPaused;
+            this.isPaused = isPaused;
+            const icon = isPaused ? '▶' : '⏸';
+            const label = isPaused ? 'RESUME' : 'PAUSE';
+            if (hudPauseIcon) hudPauseIcon.textContent = icon;
+            if (hudPauseLabel) hudPauseLabel.textContent = label;
+            if (railPauseIcon) railPauseIcon.textContent = icon;
+            transPause?.classList.toggle('is-paused', isPaused);
+        };
+
+        transPause?.addEventListener('click', togglePause);
+        railPause?.addEventListener('click', togglePause);
+
+        // 4. Mode Cards
+        const cardHome = document.getElementById('hud-mode-home');
+        const cardPick = document.getElementById('hud-mode-pick');
+        const cardSingular = document.getElementById('hud-mode-singular');
+        const cardImpact = document.getElementById('hud-mode-impact');
+
+        const setCardActive = (activeCard) => {
+            [cardHome, cardPick, cardSingular].forEach(c => c?.classList.remove('active'));
+            activeCard?.classList.add('active');
+        };
+
+        cardHome?.addEventListener('click', () => {
+            this.setTargetCoords(0.35, 0.35, 0.45);
+            setCardActive(cardHome);
+        });
+
+        cardPick?.addEventListener('click', () => {
+            this.setTargetCoords(0.40, 0.35, 0.15);
+            setCardActive(cardPick);
+        });
+
+        cardSingular?.addEventListener('click', () => {
+            this.setTargetCoords(0.78, 0.0, 0.50);
+            setCardActive(cardSingular);
+        });
+
+        cardImpact?.addEventListener('click', () => {
+            this.injectCollision(22.0, 0.25);
+            cardImpact.classList.add('active');
+            setTimeout(() => cardImpact.classList.remove('active'), 1500);
+        });
+
+        // 5. Reach X Rail (0.2 to 0.85 m)
+        const reachContainer = document.getElementById('reach-rail-container');
+        const reachInput = document.getElementById('slider-reach-vertical');
+        const reachFill = document.getElementById('reach-rail-fill');
+        const reachThumb = document.getElementById('reach-rail-thumb');
+        const reachPill = document.getElementById('val-reach-pill');
+
+        const updateReach = (val) => {
+            const num = Math.max(0.2, Math.min(0.85, parseFloat(val)));
+            this.setTargetCoords(num, this.targetPos[1], this.targetPos[2]);
+            if (reachInput) reachInput.value = num.toFixed(2);
+            if (reachPill) reachPill.textContent = `X ${num.toFixed(2)}m`;
+            const pct = ((num - 0.2) / 0.65) * 100;
+            if (reachFill) reachFill.style.height = `${pct}%`;
+            if (reachThumb) reachThumb.style.bottom = `${pct}%`;
+        };
+
+        reachInput?.addEventListener('input', (e) => updateReach(e.target.value));
+
+        let dragReach = false;
+        const handleReachPointer = (e) => {
+            const rect = reachContainer.getBoundingClientRect();
+            const frac = Math.max(0, Math.min(1, (rect.bottom - e.clientY) / rect.height));
+            updateReach(0.2 + frac * 0.65);
+        };
+        reachContainer?.addEventListener('pointerdown', (e) => {
+            dragReach = true;
+            reachContainer.setPointerCapture?.(e.pointerId);
+            handleReachPointer(e);
+        });
+        reachContainer?.addEventListener('pointermove', (e) => {
+            if (dragReach) handleReachPointer(e);
+        });
+        const stopReachDrag = (e) => {
+            if (dragReach) {
+                dragReach = false;
+                try { reachContainer.releasePointerCapture?.(e.pointerId); } catch (_) {}
+            }
+        };
+        reachContainer?.addEventListener('pointerup', stopReachDrag);
+        reachContainer?.addEventListener('pointercancel', stopReachDrag);
+
+        // 6. Height Z Rail (0.1 to 0.8 m)
+        const heightContainer = document.getElementById('height-rail-container');
+        const heightInput = document.getElementById('slider-height-vertical');
+        const heightFill = document.getElementById('height-rail-fill');
+        const heightThumb = document.getElementById('height-rail-thumb');
+        const heightPill = document.getElementById('val-height-pill');
+
+        const updateHeight = (val) => {
+            const num = Math.max(0.1, Math.min(0.8, parseFloat(val)));
+            this.setTargetCoords(this.targetPos[0], this.targetPos[1], num);
+            if (heightInput) heightInput.value = num.toFixed(2);
+            if (heightPill) heightPill.textContent = `Z ${num.toFixed(2)}m`;
+            const pct = ((num - 0.1) / 0.7) * 100;
+            if (heightFill) heightFill.style.height = `${pct}%`;
+            if (heightThumb) heightThumb.style.bottom = `${pct}%`;
+        };
+
+        heightInput?.addEventListener('input', (e) => updateHeight(e.target.value));
+
+        let dragHeight = false;
+        const handleHeightPointer = (e) => {
+            const rect = heightContainer.getBoundingClientRect();
+            const frac = Math.max(0, Math.min(1, (rect.bottom - e.clientY) / rect.height));
+            updateHeight(0.1 + frac * 0.7);
+        };
+        heightContainer?.addEventListener('pointerdown', (e) => {
+            dragHeight = true;
+            heightContainer.setPointerCapture?.(e.pointerId);
+            handleHeightPointer(e);
+        });
+        heightContainer?.addEventListener('pointermove', (e) => {
+            if (dragHeight) handleHeightPointer(e);
+        });
+        const stopHeightDrag = (e) => {
+            if (dragHeight) {
+                dragHeight = false;
+                try { heightContainer.releasePointerCapture?.(e.pointerId); } catch (_) {}
+            }
+        };
+        heightContainer?.addEventListener('pointerup', stopHeightDrag);
+        heightContainer?.addEventListener('pointercancel', stopHeightDrag);
+    }
+
 });

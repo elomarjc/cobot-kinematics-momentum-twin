@@ -1,0 +1,22 @@
+{
+  "name": "cobot-kinematics-momentum-twin",
+  "version": "1.0.0",
+  "description": "Collaborative Robot UR5e Kinematics & Generalized Momentum Sensorless Collision Observer Digital Twin",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/test_cobot_dynamics.mjs"
+  },
+  "keywords": [
+    "robotics",
+    "cobot",
+    "ur5e",
+    "inverse-kinematics",
+    "damped-least-squares",
+    "momentum-observer",
+    "iso-ts-15066",
+    "digital-twin",
+    "threejs"
+  ],
+  "author": "El Omar",
+  "license": "MIT"
+}

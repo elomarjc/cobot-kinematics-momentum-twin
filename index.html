@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Collaborative Robot Kinematics & Momentum Observer Digital Twin</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">
+            <h1>UR5e Collaborative Robot Digital Twin</h1>
+            <div class="header-subtitle">Damped Least-Squares (DLS) Inverse Kinematics & Generalized Momentum Sensorless Collision Observer</div>
+        </div>
+        <div id="badge-estop" class="status-badge badge-normal">
+            NORMAL OPERATION (CAT 0 READY)
+        </div>
+    </header>
+
+    <main class="main-grid">
+        <section class="viewport-panel">
+            <div class="canvas-container">
+                <div id="webgl-container"></div>
+            </div>
+
+            <div class="chart-panel">
+                <canvas id="chart-canvas" class="chart-canvas" width="720" height="220"></canvas>
+            </div>
+        </section>
+
+        <aside class="sidebar">
+            <div class="card">
+                <div class="card-title">Cartesian Target Position</div>
+                
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Target X (Reach)</span>
+                        <span id="val-target-x">0.45 m</span>
+                    </div>
+                    <input type="range" id="slider-target-x" min="0.10" max="0.80" step="0.01" value="0.45">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Target Y (Lateral)</span>
+                        <span id="val-target-y">0.20 m</span>
+                    </div>
+                    <input type="range" id="slider-target-y" min="-0.60" max="0.60" step="0.01" value="0.20">
+                </div>
+
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Target Z (Height)</span>
+                        <span id="val-target-z">0.35 m</span>
+                    </div>
+                    <input type="range" id="slider-target-z" min="0.05" max="0.75" step="0.01" value="0.35">
+                </div>
+
+                <div class="btn-group">
+                    <button id="preset-home" class="btn">Nominal Pose</button>
+                    <button id="preset-pick" class="btn">Table Pick</button>
+                    <button id="preset-singular" class="btn">Singularity</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Kinematics & Singularity Control</div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>DLS Damping Factor (&lambda;<sub>max</sub>)</span>
+                        <span id="val-lambda">0.08</span>
+                    </div>
+                    <input type="range" id="slider-lambda" min="0.0" max="0.25" step="0.01" value="0.08">
+                </div>
+                <div class="info-note">
+                    <strong>Singularity Robustness:</strong> When Yoshikawa index <em>w(q) &lt; 0.04</em> near wrist/shoulder singularity, the Damped Least Squares regularizer dynamically inverts <code>(J J<sup>T</sup> + &lambda;<sup>2</sup> I)</code> to guarantee finite, bounded joint velocities.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">ISO/TS 15066 Collision Safety</div>
+                <div class="btn-group">
+                    <button id="btn-collide" class="btn btn-danger">Simulate Impact (22 Nm)</button>
+                    <button id="btn-reset-estop" class="btn btn-success">Reset E-Stop</button>
+                </div>
+                <div class="info-note">
+                    <strong>Sensorless Momentum Observer:</strong> Computes generalized momentum <code>p(t) = M(q) q̇</code> and integrates motor torques to estimate external contact wrench <code>τ̂<sub>ext</sub></code> without expensive 6-axis wrist force-torque sensors or tactile skins.
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">Real-Time Telemetry</div>
+                <table class="telemetry-table">
+                    <tr>
+                        <td>End-Effector [X, Y, Z]</td>
+                        <td id="tel-ee">[0.000, 0.000, 0.000] m</td>
+                    </tr>
+                    <tr>
+                        <td>Tracking Error</td>
+                        <td id="tel-err">0.0 mm</td>
+                    </tr>
+                    <tr>
+                        <td>Manipulability w(q)</td>
+                        <td id="tel-manip">0.0000</td>
+                    </tr>
+                    <tr>
+                        <td>Observer ||τ̂<sub>ext</sub>||</td>
+                        <td id="tel-tau-ext">0.00 Nm</td>
+                    </tr>
+                    <tr>
+                        <td>Active Damping λ</td>
+                        <td id="tel-damp">0.0000</td>
+                    </tr>
+                </table>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
